@@ -1,0 +1,50 @@
+{
+  "project_info": {
+    "project_number": "692188734155",
+    "firebase_url": "https://help-me-learn.firebaseio.com",
+    "project_id": "help-me-learn",
+    "storage_bucket": "help-me-learn.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:692188734155:android:f60805425f681449",
+        "android_client_info": {
+          "package_name": "com.example.rbansal.helpmelearn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "692188734155-3f3rho9reot5qj0030tijmprhor1bjv2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.rbansal.helpmelearn",
+            "certificate_hash": "CEE78A7CF5BE2153F3074DAF4844A06E3605E3A3"
+          }
+        },
+        {
+          "client_id": "692188734155-s802o7fkneqhn0im55gsihieq2537ika.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdCA6zDSgH4QzOAib5xrRKKlIlg6tgqaA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
