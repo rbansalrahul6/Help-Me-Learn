@@ -1,6 +1,9 @@
 package com.example.rbansal.helpmelearn.ui;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -9,18 +12,33 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.example.rbansal.helpmelearn.R;
+import com.example.rbansal.helpmelearn.models.User;
+import com.example.rbansal.helpmelearn.ui.login.LoginActivity;
+import com.example.rbansal.helpmelearn.utils.Constants;
+import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private FirebaseAuth.AuthStateListener mAuthListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Firebase.setAndroidContext(this);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -42,6 +60,31 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        //reading email from shared preferences
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String uid = sp.getString(Constants.KEY_USER_ID,null);
+        final TextView textView = (TextView) findViewById(R.id.firebase_read);
+        //testing
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(Constants.FIREBASE_LOCATION_USERS);
+        final DatabaseReference userLocation = myRef.child(uid);
+        userLocation.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if(user!=null) {
+                    String userName = user.getName();
+                    textView.setText(userName);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(LOG_TAG,
+                        "Reading error" +
+                                databaseError.getMessage());
+            }
+        });
     }
 
     @Override
@@ -72,6 +115,10 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_settings) {
             return true;
         }
+        if(id == R.id.logout) {
+            logout();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -99,5 +146,17 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void takeUserToLoginScreenOnUnAuth() {
+        /* Move user to LoginActivity, and remove the backstack */
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+    protected void logout() {
+        FirebaseAuth.getInstance().signOut();
+        takeUserToLoginScreenOnUnAuth();
     }
 }

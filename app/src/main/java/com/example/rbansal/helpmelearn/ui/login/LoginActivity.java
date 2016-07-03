@@ -2,7 +2,9 @@ package com.example.rbansal.helpmelearn.ui.login;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 
 import com.example.rbansal.helpmelearn.R;
 import com.example.rbansal.helpmelearn.ui.MainActivity;
+import com.example.rbansal.helpmelearn.utils.Constants;
 import com.firebase.client.Firebase;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -46,10 +49,12 @@ public class LoginActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
-                    Log.d(LOG_TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    //direct to main activity
+                  //  startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                    Log.d(LOG_TAG, "hi");
                 } else {
                     // User is signed out
-                    Log.d(LOG_TAG, "onAuthStateChanged:signed_out");
+                    Log.d(LOG_TAG, "signed_out");
                 }
                 // ...
             }
@@ -114,16 +119,21 @@ public class LoginActivity extends AppCompatActivity {
      * Sign in with Password provider when user clicks sign in button
      */
     public void onSignInPressed(View view) {
-        String email = mEditTextEmailInput.getText().toString();
+        final String email = mEditTextEmailInput.getText().toString();
         String password = mEditTextPasswordInput.getText().toString();
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()) {
-                            Log.d(LOG_TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
+                            String uid = task.getResult().getUser().getUid();
+                            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                            SharedPreferences.Editor spe = sp.edit();
+                            spe.putString(Constants.KEY_USER_ID,uid).apply();
+                            //Log.d(LOG_TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
                             Toast.makeText(LoginActivity.this,"Login successfull",Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            intent.putExtra(Intent.EXTRA_TEXT,uid);
                             startActivity(intent);
                         }
                         else {

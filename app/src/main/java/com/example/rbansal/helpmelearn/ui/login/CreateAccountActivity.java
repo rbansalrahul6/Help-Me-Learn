@@ -13,18 +13,26 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.rbansal.helpmelearn.R;
+import com.example.rbansal.helpmelearn.models.User;
+import com.example.rbansal.helpmelearn.utils.Constants;
 import com.firebase.client.Firebase;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class CreateAccountActivity extends AppCompatActivity {
     private final String LOG_TAG = CreateAccountActivity.class.getSimpleName();
     public final String FIREBASE_URL = "https://help-me-learn.firebaseio.com/";
     private ProgressDialog mAuthProgressDialog;
     private Firebase mFirebaseRef;
+    private FirebaseDatabase database;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText mEditTextUsernameCreate, mEditTextEmailCreate, mEditTextPasswordCreate;
@@ -46,7 +54,7 @@ public class CreateAccountActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
-                    Log.d(LOG_TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    Log.d(LOG_TAG,"hi");
                 } else {
                     // User is signed out
                     Log.d(LOG_TAG, "onAuthStateChanged:signed_out");
@@ -115,6 +123,8 @@ public class CreateAccountActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()) {
+                            String uid = task.getResult().getUser().getUid();
+                            createUserInFirebaseHelper(uid);
                             mAuthProgressDialog.dismiss();
                             showToast("Account Created Successfully");
                             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
@@ -134,7 +144,27 @@ public class CreateAccountActivity extends AppCompatActivity {
     /**
      * Creates a new user in Firebase from the Java POJO
      */
-    private void createUserInFirebaseHelper(final String encodedEmail) {
+    private void createUserInFirebaseHelper(final String uid) {
+        database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(Constants.FIREBASE_LOCATION_USERS);
+        final DatabaseReference userLocation = myRef.child(uid);
+        userLocation.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //no user,create it
+                if(dataSnapshot.getValue() == null) {
+                    User newUser = new User(mUserName,mUserEmail);
+                    userLocation.setValue(newUser);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(LOG_TAG, "Error occured" + databaseError.getMessage());
+
+            }
+        });
+
     }
 
     private boolean isEmailValid(String email) {
