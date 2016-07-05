@@ -1,27 +1,38 @@
 package com.example.rbansal.helpmelearn.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.example.rbansal.helpmelearn.R;
+import com.example.rbansal.helpmelearn.models.Topic;
 import com.example.rbansal.helpmelearn.models.User;
 import com.example.rbansal.helpmelearn.ui.login.LoginActivity;
 import com.example.rbansal.helpmelearn.utils.Constants;
+import com.example.rbansal.helpmelearn.utils.Utils;
 import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -33,22 +44,78 @@ import com.google.firebase.database.ValueEventListener;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private Context mContext;
+    private FirebaseDatabase database;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private EditText topicName;
+    private Spinner categoryList;
+    private View positiveAction;
+    private boolean exists;
+    private String categoryChosed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
         Firebase.setAndroidContext(this);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        String[] categories = new String[]{"math","science","computer"};
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext,R.layout.support_simple_spinner_dropdown_item,categories);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                MaterialDialog dialog = new MaterialDialog.Builder(mContext)
+                        .title("name")
+                        .customView(R.layout.dialog_customview,true)
+                        .positiveText("ADD")
+                        .negativeText("CANCEL")
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                String topic = topicName.getText().toString();
+                                Log.v(LOG_TAG,categoryChosed+"|"+topic);
+                                Utils.showToast(mContext,
+                                        Boolean.toString(checkIfAlreadyExists(categoryChosed,topic)));
+                            }
+                        }).build();
+                positiveAction = dialog.getActionButton(DialogAction.POSITIVE);
+                categoryList = (Spinner) dialog.getCustomView().findViewById(R.id.category_list);
+                //categoryList.setPrompt("Choose");
+                categoryList.setAdapter(adapter);
+                categoryList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        categoryChosed = categoryList.getSelectedItem().toString();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+                topicName = (EditText) dialog.getCustomView().findViewById(R.id.topic_name);
+                topicName.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        positiveAction.setEnabled(s.toString().trim().length() > 0);
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+
+                    }
+                });
+                dialog.show();
+                positiveAction.setEnabled(false); // disabled by default
+                        
             }
         });
 
@@ -65,7 +132,7 @@ public class MainActivity extends AppCompatActivity
         String uid = sp.getString(Constants.KEY_USER_ID,null);
         final TextView textView = (TextView) findViewById(R.id.firebase_read);
         //testing
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference(Constants.FIREBASE_LOCATION_USERS);
         final DatabaseReference userLocation = myRef.child(uid);
         userLocation.addValueEventListener(new ValueEventListener() {
@@ -119,6 +186,10 @@ public class MainActivity extends AppCompatActivity
             logout();
             return true;
         }
+        if(id == R.id.test) {
+            Log.v("test",Boolean.toString(exists));
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -156,7 +227,46 @@ public class MainActivity extends AppCompatActivity
         finish();
     }
     protected void logout() {
+        //clear shared preferences also
         FirebaseAuth.getInstance().signOut();
         takeUserToLoginScreenOnUnAuth();
+    }
+    private boolean checkIfAlreadyExists(String category,String topic) {
+        //boolean exists;
+        DatabaseReference catgRef = database.getReference(Constants.FIREBASE_LOCATION_CATEGORIES);
+        DatabaseReference myCatg = catgRef.child(category);
+        DatabaseReference topicRef = myCatg.child(topic);
+        topicRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    //topic already exists
+                    exists = true;
+                    Log.v(LOG_TAG,dataSnapshot.getValue().toString());
+                }
+                else {
+                    //add the new topic
+                    exists = false;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        Log.v(LOG_TAG,Boolean.toString(exists));
+        return exists;
+    }
+    private void addTopic(String category,String topicname,String description) {
+        DatabaseReference topicsRef = database.getReference(Constants.FIREBASE_LOCATION_TOPICS);
+        DatabaseReference newTopic = topicsRef.push();
+        final String topicId = newTopic.getKey();
+        Topic topic = new Topic(category,topicname,description);
+        newTopic.setValue(topic);
+        //adding topic to categories
+        DatabaseReference catgRef = database.getReference(Constants.FIREBASE_LOCATION_CATEGORIES)
+                .child(category);
+        catgRef.child(topicname).setValue(topicId);
     }
 }
