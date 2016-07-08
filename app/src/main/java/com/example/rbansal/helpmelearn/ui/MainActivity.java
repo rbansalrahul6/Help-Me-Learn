@@ -23,14 +23,18 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.example.rbansal.helpmelearn.R;
+import com.example.rbansal.helpmelearn.firebaseUI.FirebaseListAdapter;
+import com.example.rbansal.helpmelearn.models.Category;
 import com.example.rbansal.helpmelearn.models.Topic;
 import com.example.rbansal.helpmelearn.models.User;
+import com.example.rbansal.helpmelearn.models.test;
 import com.example.rbansal.helpmelearn.ui.login.LoginActivity;
 import com.example.rbansal.helpmelearn.utils.Constants;
 import com.example.rbansal.helpmelearn.utils.Utils;
@@ -41,6 +45,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -162,6 +169,16 @@ public class MainActivity extends AppCompatActivity
                                 databaseError.getMessage());
             }
         });
+       ListView testList = (ListView) findViewById(R.id.test_list);
+        DatabaseReference testRef = database.getReference(Constants.FIREBASE_LOCATION_TEST);
+        FirebaseListAdapter<Category> mAdapter = new FirebaseListAdapter<Category>(this,Category.class,android.R.layout.simple_list_item_1,testRef) {
+            @Override
+            protected void populateView(View view,Category catg,int position) {
+                ((TextView)view.findViewById(android.R.id.text1)).setText(catg.getTopics().get(position).getKey());
+            }
+
+        };
+        testList.setAdapter(mAdapter);
     }
 
     @Override
@@ -197,7 +214,16 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         if(id == R.id.test) {
-            Log.v("test",Boolean.toString(exists));
+            DatabaseReference testRef = database.getReference(Constants.FIREBASE_LOCATION_TEST);
+            test a = new test("ppl","100");
+            test b =new test("cn","200");
+            List<test> mList = new ArrayList<test>();
+            mList.add(a);
+            mList.add(b);
+            Category category = new Category("test1",mList);
+            Category category1 = new Category("test2",mList);
+            testRef.push().setValue(category);
+            testRef.push().setValue(category1);
             return true;
         }
 
