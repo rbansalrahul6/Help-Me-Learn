@@ -1,5 +1,6 @@
 package com.example.rbansal.helpmelearn.ui;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -48,7 +49,9 @@ public class MainActivity extends AppCompatActivity
     private FirebaseDatabase database;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText topicName;
+    private EditText topicDescription;
     private Spinner categoryList;
+    private ProgressDialog mProgressDialog;
     private View positiveAction;
     private boolean exists;
     private String categoryChosed;
@@ -62,7 +65,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         String[] categories = new String[]{"math","science","computer"};
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext,R.layout.support_simple_spinner_dropdown_item,categories);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext,
+                R.layout.support_simple_spinner_dropdown_item,categories);
+        //setting up progress dialog
+        mProgressDialog = new ProgressDialog(mContext);
+        mProgressDialog.setTitle("Loading");
+        mProgressDialog.setMessage("Checking");
+        mProgressDialog.setCancelable(false);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,10 +84,10 @@ public class MainActivity extends AppCompatActivity
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                String topic = topicName.getText().toString();
-                                Log.v(LOG_TAG,categoryChosed+"|"+topic);
-                                Utils.showToast(mContext,
-                                        Boolean.toString(checkIfAlreadyExists(categoryChosed,topic)));
+                                mProgressDialog.show();
+                                String topic = Utils.formatData(topicName.getText().toString());
+                                String description = topicDescription.getText().toString();
+                                checkIfAlreadyExists(categoryChosed,topic,description);
                             }
                         }).build();
                 positiveAction = dialog.getActionButton(DialogAction.POSITIVE);
@@ -97,6 +106,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
                 topicName = (EditText) dialog.getCustomView().findViewById(R.id.topic_name);
+                topicDescription = (EditText) dialog.getCustomView().findViewById(R.id.topic_desc);
                 topicName.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -231,7 +241,7 @@ public class MainActivity extends AppCompatActivity
         FirebaseAuth.getInstance().signOut();
         takeUserToLoginScreenOnUnAuth();
     }
-    private boolean checkIfAlreadyExists(String category,String topic) {
+    private void checkIfAlreadyExists(final String category, final String topic, final String desc) {
         //boolean exists;
         DatabaseReference catgRef = database.getReference(Constants.FIREBASE_LOCATION_CATEGORIES);
         DatabaseReference myCatg = catgRef.child(category);
@@ -241,12 +251,15 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()) {
                     //topic already exists
-                    exists = true;
-                    Log.v(LOG_TAG,dataSnapshot.getValue().toString());
+                    mProgressDialog.dismiss();
+                    Utils.showToast(mContext,"Already Exists");
+                   // Log.v(LOG_TAG,dataSnapshot.getValue().toString());
                 }
                 else {
                     //add the new topic
-                    exists = false;
+                    addTopic(category,topic,desc);
+                    mProgressDialog.dismiss();
+                    Utils.showToast(mContext,"Saved");
                 }
             }
 
@@ -255,8 +268,8 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-        Log.v(LOG_TAG,Boolean.toString(exists));
-        return exists;
+        //Log.v(LOG_TAG,Boolean.toString(exists));
+        //return exists;
     }
     private void addTopic(String category,String topicname,String description) {
         DatabaseReference topicsRef = database.getReference(Constants.FIREBASE_LOCATION_TOPICS);
@@ -269,4 +282,5 @@ public class MainActivity extends AppCompatActivity
                 .child(category);
         catgRef.child(topicname).setValue(topicId);
     }
+    //uselessssss
 }
