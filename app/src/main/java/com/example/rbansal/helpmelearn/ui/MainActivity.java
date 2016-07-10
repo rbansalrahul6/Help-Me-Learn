@@ -13,6 +13,8 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,7 +25,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -34,6 +35,7 @@ import com.example.rbansal.helpmelearn.firebaseUI.FirebaseListAdapter;
 import com.example.rbansal.helpmelearn.models.Category;
 import com.example.rbansal.helpmelearn.models.Topic;
 import com.example.rbansal.helpmelearn.models.User;
+import com.example.rbansal.helpmelearn.rest.TopicsAdapter;
 import com.example.rbansal.helpmelearn.ui.login.LoginActivity;
 import com.example.rbansal.helpmelearn.utils.Constants;
 import com.example.rbansal.helpmelearn.utils.Utils;
@@ -44,6 +46,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -56,9 +60,13 @@ public class MainActivity extends AppCompatActivity
     private Spinner categoryList;
     private ProgressDialog mProgressDialog;
     private FirebaseListAdapter<Category> mAdapter;
+    private TopicsAdapter topicsAdapter;
     private View positiveAction;
     private boolean exists;
     private String categoryChosed;
+    private ArrayList<String> topicsDesc = new ArrayList<>();
+    private ArrayList<Topic> topicsList = new ArrayList<>();
+    private ArrayAdapter<String> listAdapter;
     private Category mCategory;
 
     @Override
@@ -80,9 +88,42 @@ public class MainActivity extends AppCompatActivity
 
         };
         //
-        String[] categories = new String[]{"math","science","computer"};
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext,
-                R.layout.support_simple_spinner_dropdown_item,categories);
+        final Spinner testList = (Spinner) findViewById(R.id.category_list_1);
+        RecyclerView topicsRV = (RecyclerView) findViewById(R.id.topics_recyler_view);
+        topicsAdapter = new TopicsAdapter(topicsList);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        topicsRV.setLayoutManager(mLayoutManager);
+        topicsRV.setAdapter(topicsAdapter);
+        testList.setAdapter(mAdapter);
+        testList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Category c = (Category) testList.getSelectedItem();
+                topicsList.clear();
+                String[] topicRefs = c.getTopics().values().toArray(new String[0]);
+                for(String ref : topicRefs) {
+                    DatabaseReference topicref = database.getReference(Constants.FIREBASE_LOCATION_TOPICS).child(ref);
+                    topicref.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Topic topic = dataSnapshot.getValue(Topic.class);
+                            topicsList.add(topic);
+                            topicsAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         //setting up progress dialog
         mProgressDialog = new ProgressDialog(mContext);
         mProgressDialog.setTitle("Loading");
@@ -104,7 +145,7 @@ public class MainActivity extends AppCompatActivity
                                 String topic = Utils.formatData(topicName.getText().toString());
                                 String description = topicDescription.getText().toString();
                                 checkIfAlreadyExists(categoryChosed,topic,description);
-                                Log.v("category",categoryChosed);
+                               // Log.v("category",categoryChosed);
                             }
                         }).build();
                 positiveAction = dialog.getActionButton(DialogAction.POSITIVE);
@@ -179,8 +220,6 @@ public class MainActivity extends AppCompatActivity
                                 databaseError.getMessage());
             }
         });
-      ListView testList = (ListView) findViewById(R.id.test_list);
-      //  testList.setAdapter(mAdapter);
     }
 
     @Override
@@ -304,7 +343,7 @@ public class MainActivity extends AppCompatActivity
         newTopic.setValue(topic);
         //adding topic to categories
         DatabaseReference catgRef = database.getReference(Constants.FIREBASE_LOCATION_CATEGORIES)
-                .child(category);
+                .child(category).child(Constants.FIREBASE_LOCATION_TOPICS);
         catgRef.child(topicname).setValue(topicId);
     }
     //uselessssss
