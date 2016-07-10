@@ -34,7 +34,6 @@ import com.example.rbansal.helpmelearn.firebaseUI.FirebaseListAdapter;
 import com.example.rbansal.helpmelearn.models.Category;
 import com.example.rbansal.helpmelearn.models.Topic;
 import com.example.rbansal.helpmelearn.models.User;
-import com.example.rbansal.helpmelearn.models.test;
 import com.example.rbansal.helpmelearn.ui.login.LoginActivity;
 import com.example.rbansal.helpmelearn.utils.Constants;
 import com.example.rbansal.helpmelearn.utils.Utils;
@@ -46,9 +45,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -59,9 +55,11 @@ public class MainActivity extends AppCompatActivity
     private EditText topicDescription;
     private Spinner categoryList;
     private ProgressDialog mProgressDialog;
+    private FirebaseListAdapter<Category> mAdapter;
     private View positiveAction;
     private boolean exists;
     private String categoryChosed;
+    private Category mCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +67,19 @@ public class MainActivity extends AppCompatActivity
         mContext = this;
         Firebase.setAndroidContext(this);
         setContentView(R.layout.activity_main);
+        database = FirebaseDatabase.getInstance();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //setting up category list adapter
+        DatabaseReference testRef = database.getReference(Constants.FIREBASE_LOCATION_CATEGORIES);
+        mAdapter = new FirebaseListAdapter<Category>(this,Category.class,R.layout.support_simple_spinner_dropdown_item,testRef) {
+            @Override
+            protected void populateView(View view,Category catg,int position) {
+                ((TextView)view.findViewById(android.R.id.text1)).setText(catg.getName());
+            }
+
+        };
+        //
         String[] categories = new String[]{"math","science","computer"};
         final ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext,
                 R.layout.support_simple_spinner_dropdown_item,categories);
@@ -95,16 +104,18 @@ public class MainActivity extends AppCompatActivity
                                 String topic = Utils.formatData(topicName.getText().toString());
                                 String description = topicDescription.getText().toString();
                                 checkIfAlreadyExists(categoryChosed,topic,description);
+                                Log.v("category",categoryChosed);
                             }
                         }).build();
                 positiveAction = dialog.getActionButton(DialogAction.POSITIVE);
                 categoryList = (Spinner) dialog.getCustomView().findViewById(R.id.category_list);
                 //categoryList.setPrompt("Choose");
-                categoryList.setAdapter(adapter);
+                categoryList.setAdapter(mAdapter);
                 categoryList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        categoryChosed = categoryList.getSelectedItem().toString();
+                        mCategory = (Category) categoryList.getSelectedItem();
+                        categoryChosed = mCategory.getName();
                     }
 
                     @Override
@@ -149,7 +160,6 @@ public class MainActivity extends AppCompatActivity
         String uid = sp.getString(Constants.KEY_USER_ID,null);
         final TextView textView = (TextView) findViewById(R.id.firebase_read);
         //testing
-        database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference(Constants.FIREBASE_LOCATION_USERS);
         final DatabaseReference userLocation = myRef.child(uid);
         userLocation.addValueEventListener(new ValueEventListener() {
@@ -169,16 +179,8 @@ public class MainActivity extends AppCompatActivity
                                 databaseError.getMessage());
             }
         });
-       ListView testList = (ListView) findViewById(R.id.test_list);
-        DatabaseReference testRef = database.getReference(Constants.FIREBASE_LOCATION_TEST);
-        FirebaseListAdapter<Category> mAdapter = new FirebaseListAdapter<Category>(this,Category.class,android.R.layout.simple_list_item_1,testRef) {
-            @Override
-            protected void populateView(View view,Category catg,int position) {
-                ((TextView)view.findViewById(android.R.id.text1)).setText(catg.getTopics().get(position).getKey());
-            }
-
-        };
-        testList.setAdapter(mAdapter);
+      ListView testList = (ListView) findViewById(R.id.test_list);
+      //  testList.setAdapter(mAdapter);
     }
 
     @Override
@@ -214,16 +216,13 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         if(id == R.id.test) {
-            DatabaseReference testRef = database.getReference(Constants.FIREBASE_LOCATION_TEST);
-            test a = new test("ppl","100");
-            test b =new test("cn","200");
-            List<test> mList = new ArrayList<test>();
-            mList.add(a);
-            mList.add(b);
-            Category category = new Category("test1",mList);
-            Category category1 = new Category("test2",mList);
-            testRef.push().setValue(category);
-            testRef.push().setValue(category1);
+         /*   DatabaseReference testRef = database.getReference(Constants.FIREBASE_LOCATION_TEST);
+            DatabaseReference testCatg = testRef.child("category1");
+            HashMap<String,String> newTopic = new HashMap<>();
+            newTopic.put("biology","100");
+            newTopic.put("math","200");
+            Category category = new Category("category_1",newTopic);
+            testCatg.setValue(category); */
             return true;
         }
 
@@ -267,11 +266,11 @@ public class MainActivity extends AppCompatActivity
         FirebaseAuth.getInstance().signOut();
         takeUserToLoginScreenOnUnAuth();
     }
-    private void checkIfAlreadyExists(final String category, final String topic, final String desc) {
+    private void checkIfAlreadyExists(final String category,final String topic,final String desc) {
         //boolean exists;
         DatabaseReference catgRef = database.getReference(Constants.FIREBASE_LOCATION_CATEGORIES);
         DatabaseReference myCatg = catgRef.child(category);
-        DatabaseReference topicRef = myCatg.child(topic);
+        DatabaseReference topicRef = myCatg.child(Constants.FIREBASE_LOCATION_TOPICS).child(topic);
         topicRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

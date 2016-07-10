@@ -1,18 +1,18 @@
 package com.example.rbansal.helpmelearn.models;
 
-import java.util.List;
+import java.util.HashMap;
 
 /**
  * Created by rbansal on 8/7/16.
  */
 public class Category {
     String name;
-    List<test> topics;
+    HashMap<String,String> topics;
 
     public Category() {
     }
 
-    public Category(String name, List<test> topics) {
+    public Category(String name, HashMap<String, String> topics) {
         this.name = name;
         this.topics = topics;
     }
@@ -21,7 +21,7 @@ public class Category {
         return name;
     }
 
-    public List<test> getTopics() {
+    public HashMap<String, String> getTopics() {
         return topics;
     }
 }
