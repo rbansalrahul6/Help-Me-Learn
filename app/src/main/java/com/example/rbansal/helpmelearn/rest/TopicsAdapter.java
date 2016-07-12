@@ -25,14 +25,14 @@ public class TopicsAdapter extends RecyclerView.Adapter<TopicsAdapter.MyViewHold
         public TextView topicName,description;
         public MyViewHolder(View view) {
             super(view);
-            topicName = (TextView) view.findViewById(R.id.name);
-            description = (TextView) view.findViewById(R.id.desc);
+            topicName = (TextView) view.findViewById(R.id.topicName);
+            description = (TextView) view.findViewById(R.id.topicDesc);
         }
     }
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.topic_list_row,parent,false);
+                .inflate(R.layout.topic_card,parent,false);
         return new MyViewHolder(itemView);
     }
     @Override

@@ -255,13 +255,8 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         if(id == R.id.test) {
-         /*   DatabaseReference testRef = database.getReference(Constants.FIREBASE_LOCATION_TEST);
-            DatabaseReference testCatg = testRef.child("category1");
-            HashMap<String,String> newTopic = new HashMap<>();
-            newTopic.put("biology","100");
-            newTopic.put("math","200");
-            Category category = new Category("category_1",newTopic);
-            testCatg.setValue(category); */
+            Intent intent = new Intent(this,ResourcesActivity.class);
+            startActivity(intent);
             return true;
         }
 

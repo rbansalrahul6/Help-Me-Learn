@@ -23,11 +23,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:spinnerMode="dropdown" />
-    <ListView
-        android:id="@+id/test_topic_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"/>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/topics_recyler_view"
         android:layout_width="match_parent"
