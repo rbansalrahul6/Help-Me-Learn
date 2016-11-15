@@ -5,9 +5,13 @@
     <android.support.v7.widget.CardView
         android:id="@+id/topic_card"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:elevation="3dp"
-        android:layout_marginBottom="10dp">
+        android:background="#C5CAE9"
+        android:foreground="?attr/selectableItemBackground">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -17,11 +21,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:gravity="center"
             android:textStyle="bold"/>
         <TextView
-            android:id="@+id/topicDesc"
+            android:id="@+id/resCount"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:text="100 resources"/>
         </LinearLayout>
     </android.support.v7.widget.CardView>
 

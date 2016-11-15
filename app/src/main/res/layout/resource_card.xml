@@ -1,26 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <android.support.v7.widget.CardView
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+<android.support.v7.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:elevation="3dp" >
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="10dp"
+    android:paddingTop="10dp">
+    <ImageView
+        android:id="@+id/type_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_book_black_48dp"/>
+    <TextView
+        android:id="@+id/res_link"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="3dp">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/resource_type"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"/>
-            <TextView
-                android:id="@+id/resource_desc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
-
-    </android.support.v7.widget.CardView>
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/type_icon"
+        android:gravity="center"
+        android:text="Hello me"
+        android:textSize="20sp"/>
+    <TextView
+        android:id="@+id/res_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/type_icon"
+        android:layout_marginTop="15dp"
+        android:gravity="left"
+        android:text="Electricity is very important. It is very evolutionary technology. We should use it judiciously. Electricity is very important. It is very evolutionary technology. We should use it judiciously"/>
+    <View
+        android:id="@+id/desc_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/dark_grey"
+        android:layout_below="@+id/res_desc"
+        android:elevation="1dp" />
+    <TextView
+        android:id="@+id/vote_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/desc_divider"
+        android:layout_toRightOf="@+id/bmk_btn"
+        android:gravity="right"
+        android:layout_marginTop="0dp"
+        android:text="number of votes"
+        android:textSize="16sp"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/type_icon"
+        android:layout_below="@+id/res_link"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:text="- By Hardik"
+        android:textStyle="italic|bold"
+        android:textSize="16sp"/>
+    <Button
+        android:id="@+id/vote_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/desc_divider"
+        android:layout_marginTop="5dp"
+        android:text="Vote"/>
+    <Button
+        android:id="@+id/bmk_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/desc_divider"
+        android:layout_toRightOf="@+id/vote_btn"
+        android:layout_marginTop="5dp"
+        android:text="Bookmark"/>
+</RelativeLayout>
+</android.support.v7.widget.CardView>
 </LinearLayout>

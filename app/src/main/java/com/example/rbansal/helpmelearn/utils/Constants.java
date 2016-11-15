@@ -9,6 +9,7 @@ public final class Constants {
     public static String FIREBASE_LOCATION_USERS = "users";
     public static String FIREBASE_LOCATION_TOPICS = "topics";
     public static String FIREBASE_LOCATION_CATEGORIES = "categories";
+    public static String FIREBASE_LOCATION_VOTED = "voted";
     public static String FIREBASE_LOCATION_TEST = "test";
     public static String FIREBASE_URL_USERS = FIREBASE_URL + FIREBASE_LOCATION_USERS;
     //shared preferences

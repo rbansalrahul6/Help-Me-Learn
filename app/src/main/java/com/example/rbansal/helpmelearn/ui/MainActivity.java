@@ -35,6 +35,7 @@ import com.example.rbansal.helpmelearn.firebaseUI.FirebaseListAdapter;
 import com.example.rbansal.helpmelearn.models.Category;
 import com.example.rbansal.helpmelearn.models.Topic;
 import com.example.rbansal.helpmelearn.models.User;
+import com.example.rbansal.helpmelearn.rest.RecyclerViewItemClickListener;
 import com.example.rbansal.helpmelearn.rest.TopicsAdapter;
 import com.example.rbansal.helpmelearn.ui.login.LoginActivity;
 import com.example.rbansal.helpmelearn.utils.Constants;
@@ -93,6 +94,16 @@ public class MainActivity extends AppCompatActivity
         topicsAdapter = new TopicsAdapter(topicsList);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         topicsRV.setLayoutManager(mLayoutManager);
+        topicsRV.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
+                new RecyclerViewItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View v, int position) {
+                        Topic topic = topicsList.get(position);
+                        Intent intent = new Intent(getApplicationContext(),ResourcesActivity.class)
+                                .putExtra("topicObj",topic);
+                        startActivity(intent);
+                    }
+                }));
         topicsRV.setAdapter(topicsAdapter);
         testList.setAdapter(mAdapter);
         testList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -103,7 +114,7 @@ public class MainActivity extends AppCompatActivity
                 String[] topicRefs = c.getTopics().values().toArray(new String[0]);
                 for(String ref : topicRefs) {
                     DatabaseReference topicref = database.getReference(Constants.FIREBASE_LOCATION_TOPICS).child(ref);
-                    topicref.addValueEventListener(new ValueEventListener() {
+                    topicref.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             Topic topic = dataSnapshot.getValue(Topic.class);
@@ -255,7 +266,7 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         if(id == R.id.test) {
-            Intent intent = new Intent(this,ResourcesActivity.class);
+            Intent intent = new Intent(this,AddResourceActivity.class);
             startActivity(intent);
             return true;
         }

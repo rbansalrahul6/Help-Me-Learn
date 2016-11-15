@@ -26,7 +26,7 @@ public class TopicsAdapter extends RecyclerView.Adapter<TopicsAdapter.MyViewHold
         public MyViewHolder(View view) {
             super(view);
             topicName = (TextView) view.findViewById(R.id.topicName);
-            description = (TextView) view.findViewById(R.id.topicDesc);
+            //description = (TextView) view.findViewById(R.id.topicDesc);
         }
     }
     @Override
@@ -39,10 +39,11 @@ public class TopicsAdapter extends RecyclerView.Adapter<TopicsAdapter.MyViewHold
     public void onBindViewHolder(MyViewHolder holder,int position) {
         Topic topic = topicsList.get(position);
         holder.topicName.setText(topic.getTopicName());
-        holder.description.setText(topic.getDescription());
+        //holder.description.setText(topic.getDescription());
     }
     @Override
     public int getItemCount() {
         return topicsList.size();
     }
+
 }

@@ -16,6 +16,7 @@
         android:layout_height="wrap_content"
         android:elevation="5dp">
         <TextView
+            android:id="@+id/top_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -72,6 +73,9 @@
         </LinearLayout>
 
     </LinearLayout>
-
-
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/res_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </android.support.v7.widget.RecyclerView>
 </LinearLayout>
